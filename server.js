@@ -1,6 +1,6 @@
 const http = require('http');
 const port = process.env.PORT || 3000;
-const originEndpoint = process.env.ENDPOINT;
+const originEndpoint = process.env.ENDPOINT || null;
 const app = require('./app');
 
 const server = http.createServer(app);
@@ -8,10 +8,19 @@ server.listen(port, () => {
     console.log('Letschat service is running on port ' + port);
 })
 
-const io = require('socket.io')(server, {
+const option1 = {
+    pingTimeout: 60000,
+    cors: {
+        origin: originEndpoint
+    }
+}
+
+const option2 = {
     pingTimeout: 60000,
     cors: {}
-});
+}
+
+const io = require('socket.io')(server, originEndpoint != null ? option1: option2);
 
 io.on("connection", (socket) => {
     console.log('Connected to socket io.........');
