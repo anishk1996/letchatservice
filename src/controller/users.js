@@ -15,8 +15,10 @@ async function login(req, res, next) {
             delete finalResult['password'];
             finalResult['token'] = token;
             res.json(finalResult);
-        } else {
+        } else if (result[0]){
             next({ statusCode: 401, message: 'Password is incorrect'});
+        } else {
+            next({ statusCode: 404, message: 'User is not registered'});
         }
     } catch(err) {
         console.log('Error', err.message);

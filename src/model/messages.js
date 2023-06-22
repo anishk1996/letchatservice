@@ -14,6 +14,12 @@ const messagesSchema = new Schema({
     msg: {
       type: String
     },
+    file: {
+      type: String,
+    },
+    file_type: {
+      type: String
+    },
     type: {
       type: String
     },
