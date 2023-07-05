@@ -98,6 +98,5 @@ const comparePassword = async (user, password) => {
 module.exports = {
     login,
     signup,
-    usersList,
-    forgotPassword
+    usersList
 }

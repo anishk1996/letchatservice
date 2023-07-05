@@ -1,6 +1,6 @@
 {
   "name": "letchatservice",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "letschat backend service",
   "main": "server.js",
   "scripts": {
