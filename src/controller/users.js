@@ -1,4 +1,5 @@
 const userService = require('../service/users');
+const bcrypt = require('bcrypt');
 const generateAccessToken = require('../middlewares/authentication').generateAccessToken;
 
 async function login(req, res, next) {
@@ -6,19 +7,22 @@ async function login(req, res, next) {
         let email = req.body.email;
         let password = req.body.password;
         let result = await userService.findUser(email);
-        if (result[0].password == password) {
-            console.log('Correct user found');
-            //generate jwt token
-            const token = await generateAccessToken({ username: email });
-            console.log('Token generated', token);
-            let finalResult = JSON.parse(JSON.stringify(result[0]));
-            delete finalResult['password'];
-            finalResult['token'] = token;
-            res.json(finalResult);
-        } else if (result[0]){
-            next({ statusCode: 401, message: 'Password is incorrect'});
+        if (result.length > 0) {
+            let passResult = await comparePassword(result, password);
+            if (passResult) {
+                console.log('Correct user found');
+                //generate jwt token
+                const token = await generateAccessToken({ username: email });
+                console.log('Token generated', token);
+                let finalResult = JSON.parse(JSON.stringify(result[0]));
+                delete finalResult['password'];
+                finalResult['token'] = token;
+                res.json(finalResult);
+            } else {
+                next({ statusCode: 401, message: 'Password is incorrect'});
+            }
         } else {
-            next({ statusCode: 404, message: 'User is not registered'});
+            next({ statusCode: 404, message: 'You are not registered'});
         }
     } catch(err) {
         console.log('Error', err.message);
@@ -29,6 +33,9 @@ async function login(req, res, next) {
 async function signup(req, res, next) {
     try {
         let data = req.body;
+        let hashedPass = await passwordHashing(data.password);
+        data.password = hashedPass;
+        data.name = data.fname + ' ' + data.lname;
         let result = await userService.saveUser(data);
         if (result[0]) {
             console.log('User registered');
@@ -64,8 +71,33 @@ async function usersList(req, res, next) {
     }
 }
 
+const passwordHashing = async (password) => {
+    try {
+        const salt = await bcrypt.genSalt(10);
+        const hashpass = await bcrypt.hash(password, salt);
+        console.log('Pre hash generated');
+        password = hashpass;
+        return password;
+      } catch (error) {
+        console.log('Error while hashing password', error.message);
+        throw error; 
+      }
+}
+
+const comparePassword = async (user, password) => {
+    if (!password) throw new Error('No proper password');
+    try {
+      const result = await bcrypt.compare(password, user[0].password);
+      return result;
+    } catch (error) {
+      console.log('Error while comparing password', error.message);
+      throw new Error(error.message);
+    }
+}
+
 module.exports = {
     login,
     signup,
-    usersList
+    usersList,
+    forgotPassword
 }

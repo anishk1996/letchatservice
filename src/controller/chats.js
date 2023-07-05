@@ -1,5 +1,7 @@
 const chatService = require('../service/chats');
 const messageService = require('../service/message');
+const encrypt = require('../service/crypto').encrypt;
+const decryptAllValues = require('../service/crypto').decryptAllValues;
 
 async function insertChat(req, res, next) {
     try {
@@ -39,6 +41,8 @@ async function findChat(req, res, next) {
 async function saveChat(req, res, next) {
     try {
         let data = req.body;
+        let message = await encrypt(data[0].msg);
+        data[0].msg = message;
         let result = await messageService.insertMessage(data);
         res.json(result);
     } catch (err) {
@@ -54,7 +58,8 @@ async function getMessages(req, res, next) {
             next({ statusCode: 500, message: 'No data passed in the query' });    
         } else {
             let result = await messageService.getMessages(data);
-            res.json(result);
+            let finalResult = await decryptAllValues(result);
+            res.json(finalResult);
         }
     } catch (err) {
         console.log('Error', err.message);
