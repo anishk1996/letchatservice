@@ -6,7 +6,9 @@ const app = require('./app');
 const server = http.createServer(app);
 server.listen(port, () => {
     console.log('Letschat service is running on port ' + port);
-})
+});
+
+const findAndUpdateUser = require('./src/service/updateUser').findAndUpdateUser;
 
 const option1 = {
     pingTimeout: 60000,
@@ -19,7 +21,7 @@ const option2 = {
     pingTimeout: 60000,
     cors: {}
 }
-
+const onlineUsers = {};
 const io = require('socket.io')(server, originEndpoint != null ? option1: option2);
 
 io.on("connection", (socket) => {
@@ -33,6 +35,12 @@ io.on("connection", (socket) => {
         socket.join(room);
         console.log('User joined room', room);
     });
+
+    socket.on('user status', async (data) => {
+        await findAndUpdateUser(data.id, data.status);
+        onlineUsers[data.id] = data;
+        socket.emit('userOnlineStatus', onlineUsers);
+    })
 
     socket.on('new message', (newMessageReceived) => {
         console.log('New message received', newMessageReceived);
@@ -51,9 +59,8 @@ io.on("connection", (socket) => {
         socket.in(newMessageReceived.sender._id).emit('read received', newMessageReceived);
     });
 
-    socket.off('setup', () => {
+    socket.on('disconnect', () => {
         console.log('User disconnected');
-        socket.leave(userData._id);
     });
     
 });

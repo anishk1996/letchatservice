@@ -14,6 +14,15 @@ const usersSchema = new Schema({
     },
     password: {
       type: String
+    },
+    isOnline: {
+      type: String
+    },
+    dob: {
+      type: String
+    },
+    gender: {
+      type: String
     }
 }, {
     timestamps: {

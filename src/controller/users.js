@@ -1,6 +1,8 @@
 const userService = require('../service/users');
 const bcrypt = require('bcrypt');
 const generateAccessToken = require('../middlewares/authentication').generateAccessToken;
+const chatService = require('../service/chats');
+const messageService = require('../service/message');
 
 async function login(req, res, next) {
     try {
@@ -71,6 +73,43 @@ async function usersList(req, res, next) {
     }
 }
 
+// this function will delete user with all of its data in corresponding collections.
+async function deleteUser(req, res, next) {
+    try {
+        const userId = req.params.userId;
+        console.log('delete user', userId);
+        let user = await userService.findUserfromId(userId);
+        console.log('User data', user);
+        if (user) {
+            let userDeteleResult = await userService.deleteUser(userId);
+            console.log('user deleted', userDeteleResult);
+            if (userDeteleResult) {
+                let userIds = [ userId ];
+                let chatRoomData = await chatService.findChat({ user_ids: { $in: userIds } });
+                if (chatRoomData.length > 0) {
+                    console.log('Chat Room data', chatRoomData);
+                    let chatIds = [];
+                    chatRoomData.forEach(element => {
+                        chatIds.push(element._id);
+                    });
+                    console.log('Chat room ids', chatIds);
+                    let chatRoomDeleteResult = await chatService.deleteChat({ _id: { $in: chatIds } });
+                    if (chatRoomDeleteResult) {
+                        let messageData = await messageService.deleteMessages({ 'chat._id': { $in: chatIds } });
+                        if (messageData) {
+                            res.json({ data: user[0], message: 'User deleted' });
+                        }
+                    }
+                }
+            }
+        }
+        // res.json({ statusCode: 500, message: 'User was not deleted' });
+    } catch (err) {
+        console.log('Error', err.message);
+        next({ statusCode: 500, message: err.message });        
+    }
+}
+
 const passwordHashing = async (password) => {
     try {
         const salt = await bcrypt.genSalt(10);
@@ -98,5 +137,6 @@ const comparePassword = async (user, password) => {
 module.exports = {
     login,
     signup,
-    usersList
+    usersList,
+    deleteUser
 }

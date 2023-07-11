@@ -18,8 +18,19 @@ const saveChat = async (data) => {
 const findChat = async (query) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let responseData = await chats.findOne(query, '+_id  -user_ids -__v -created_on -updated_on');
+            let responseData = await chats.find(query, '+_id  -user_ids -__v -created_on -updated_on');
             return resolve(responseData);
+        } catch (err) {
+            return reject(err);
+        }
+    })
+}
+
+const deleteChat = async (query) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let response = await chats.deleteMany(query);
+            return resolve(response);
         } catch (err) {
             return reject(err);
         }
@@ -28,5 +39,6 @@ const findChat = async (query) => {
 
 module.exports = {
     saveChat,
-    findChat
+    findChat,
+    deleteChat
 }

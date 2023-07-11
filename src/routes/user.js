@@ -5,4 +5,6 @@ const authenticateToken = require('../middlewares/authentication').authenticateT
 
 router.get('/list', authenticateToken, userController.usersList);
 
+router.delete('/user/:userId', userController.deleteUser);
+
 module.exports = router;

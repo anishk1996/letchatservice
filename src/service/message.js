@@ -26,7 +26,19 @@ const getMessages = async (data) => {
     })
 }
 
+const deleteMessages = async (query) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let result = await messages.deleteMany(query);
+            return resolve(result);
+        } catch (err) {
+            return reject(err);
+        }
+    })
+}
+
 module.exports = {
     insertMessage,
-    getMessages
+    getMessages,
+    deleteMessages
 }

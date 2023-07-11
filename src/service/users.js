@@ -3,12 +3,23 @@ const users = require('../model/users');
 const findUser = async (email) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let responseData = await users.find({ email: email },'+name +email +password -__v -created_on -updated_on').sort({ "_id": -1 });
+            let responseData = await users.find({ email: email },'+name +email +password +isOnline +dob +gender -__v -created_on -updated_on').sort({ "_id": -1 });
             return resolve(responseData);
         } catch (error) {
             return reject(error);
         }
     });
+}
+
+const findUserfromId = async (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let response = await users.find({ _id: id }, '+name +email -password -isOnline -dob -gender -__v -created_on -updated_on').sort({ "_id": -1 });
+            return resolve(response);
+        } catch (error) {
+            return reject(error);
+        }
+    })
 }
 
 const saveUser = async (data) => {
@@ -29,8 +40,19 @@ const saveUser = async (data) => {
 const listAllUser = async () => {
     return new Promise(async (resolve, reject) => {
         try {
-            let responseData = await users.find({}, '+name +email -__v -created_on -updated_on').sort({ "_id": -1 });
+            let responseData = await users.find({}, '+name +email +isOnline +dob +gender -__v -created_on -updated_on').sort({ "_id": -1 });
             return resolve(responseData)
+        } catch (error) {
+            return reject(error);
+        }
+    })
+}
+
+const deleteUser = async (id) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let response = await users.deleteOne({ _id: id });
+            return resolve(response);
         } catch (error) {
             return reject(error);
         }
@@ -41,5 +63,7 @@ const listAllUser = async () => {
 module.exports = {
     findUser,
     saveUser,
-    listAllUser
+    listAllUser,
+    findUserfromId,
+    deleteUser
 }
