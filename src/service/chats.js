@@ -18,7 +18,7 @@ const saveChat = async (data) => {
 const findChat = async (query) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let responseData = await chats.find(query, '+_id -__v -created_on -updated_on');
+            let responseData = await chats.find(query, {'_id':1,  'user_ids':0, '__v':0, 'created_on':0, 'updated_on':0 });
             return resolve(responseData);
         } catch (err) {
             return reject(err);

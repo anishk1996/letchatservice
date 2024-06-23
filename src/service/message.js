@@ -18,7 +18,7 @@ const insertMessage = async (data) => {
 const getMessages = async (data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            let responseData = await messages.find({ 'chat._id': data },'-__v -created_on -updated_on').sort({ "_id": 1 });
+            let responseData = await messages.find({ 'chat._id': data },{'__v':0, 'created_on':0, 'updated_on':0}).sort({ "_id": 1 });
             return resolve(responseData);
         } catch (err) {
             return reject(err); 
